@@ -6,6 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,9 +23,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -37,6 +41,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.minimarex.minimaapi.MinimaAPIMessages;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private BroadcastReceiver notifyReceiver;
     private final Runnable syncTask = this::doSync;
+    private ActivityResultLauncher<String> exportLauncher;
+    private ActivityResultLauncher<String[]> importLauncher;
 
     private int chainBlock = 0;
     private boolean paired = false;
@@ -97,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
 
         syncBtn.setOnClickListener(v -> requestSync());
         ((Button) findViewById(R.id.openNodeBtn)).setOnClickListener(v -> openMinimaCore());
+        // Export/Import via the Storage Access Framework — back up the collected history to a file you keep.
+        exportLauncher = registerForActivityResult(new ActivityResultContracts.CreateDocument("application/json"),
+                uri -> { if (uri != null) doExport(uri); });
+        importLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(),
+                uri -> { if (uri != null) doImport(uri); });
+        findViewById(R.id.menuBtn).setOnClickListener(this::showMenu);
         search.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
@@ -353,6 +369,67 @@ public class MainActivity extends AppCompatActivity {
         Intent launch = getPackageManager().getLaunchIntentForPackage(NODE_PKG);
         if (launch != null) startActivity(launch);
         else Toast.makeText(this, "Minima Core isn't installed.", Toast.LENGTH_LONG).show();
+    }
+
+    // ---- export / import: durable backup of the collected history (survives uninstall / new phone) ----
+
+    private void showMenu(View anchor) {
+        PopupMenu m = new PopupMenu(this, anchor);
+        m.getMenu().add(0, 1, 0, "Export history (backup)");
+        m.getMenu().add(0, 2, 1, "Import history (restore / merge)");
+        m.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) { exportLauncher.launch("minima-history.json"); return true; }
+            if (item.getItemId() == 2) { importLauncher.launch(new String[]{"application/json", "*/*"}); return true; }
+            return false;
+        });
+        m.show();
+    }
+
+    /** Write the whole local DB to a user-chosen JSON file (Downloads, Drive, …). */
+    private void doExport(Uri uri) {
+        io.execute(() -> {
+            try {
+                List<HistoryEntry> all = db.all();
+                JSONObject root = new JSONObject();
+                root.put("app", "minima-history"); root.put("version", 1);
+                root.put("exported_at", System.currentTimeMillis()); root.put("count", all.size());
+                JSONArray arr = new JSONArray();
+                for (HistoryEntry e : all) arr.put(e.toJson());
+                root.put("tx", arr);
+                try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                    os.write(root.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                ui.post(() -> Toast.makeText(this, "Exported " + all.size() + " transactions", Toast.LENGTH_SHORT).show());
+            } catch (Exception e) {
+                ui.post(() -> Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
+    }
+
+    /** Merge an exported file back in — idempotent (dedup on txpowid), so restoring or combining devices is safe. */
+    private void doImport(Uri uri) {
+        io.execute(() -> {
+            try {
+                StringBuilder sb = new StringBuilder();
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri), StandardCharsets.UTF_8))) {
+                    String line; while ((line = r.readLine()) != null) sb.append(line);
+                }
+                JSONArray arr = new JSONObject(sb.toString()).optJSONArray("tx");
+                int total = 0, neu = 0;
+                if (arr != null) for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.optJSONObject(i);
+                    if (o == null) continue;
+                    HistoryEntry e = HistoryEntry.fromJson(o);
+                    if (e.txpowid.isEmpty()) continue;
+                    total++;
+                    if (db.insert(e)) neu++;
+                }
+                final int ft = total, fn = neu;
+                ui.post(() -> { reloadList(); Toast.makeText(this, "Imported " + ft + " · " + fn + " new", Toast.LENGTH_SHORT).show(); });
+            } catch (Exception e) {
+                ui.post(() -> Toast.makeText(this, "Import failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
     }
 
     private static String relative(long ms) {

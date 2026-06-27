@@ -22,6 +22,33 @@ public class HistoryEntry {
     public String counterparty;     // display address of the other side
     public String inputs, outputs;  // JSON arrays [{addr, amount, tokenid}] for the detail view
 
+    /** Full lossless serialization for export. */
+    public JSONObject toJson() {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("txpowid", txpowid); o.put("block", block); o.put("timemilli", timemilli);
+            o.put("direction", direction); o.put("incoming", incoming);
+            o.put("tokenid", tokenid); o.put("tokenName", tokenName); o.put("amount", amount);
+            o.put("deltas", deltas); o.put("counterparty", counterparty);
+            o.put("inputs", inputs); o.put("outputs", outputs); o.put("syncedAt", syncedAt);
+        } catch (Exception ignored) {}
+        return o;
+    }
+
+    /** Reconstruct an entry from an export record (re-import is idempotent via the txpowid key). */
+    public static HistoryEntry fromJson(JSONObject o) {
+        HistoryEntry e = new HistoryEntry();
+        e.txpowid = o.optString("txpowid", "");
+        e.block = o.optLong("block"); e.timemilli = o.optLong("timemilli");
+        e.direction = o.optString("direction", "self"); e.incoming = o.optBoolean("incoming");
+        e.tokenid = o.optString("tokenid", "0x00"); e.tokenName = o.optString("tokenName", "");
+        e.amount = o.optString("amount", "0");
+        e.deltas = o.optString("deltas", "{}"); e.counterparty = o.optString("counterparty", "");
+        e.inputs = o.optString("inputs", "[]"); e.outputs = o.optString("outputs", "[]");
+        e.syncedAt = o.optLong("syncedAt", System.currentTimeMillis());
+        return e;
+    }
+
     public static HistoryEntry from(JSONObject txpow, JSONObject detail) {
         HistoryEntry e = new HistoryEntry();
         e.txpowid = txpow.optString("txpowid", "");

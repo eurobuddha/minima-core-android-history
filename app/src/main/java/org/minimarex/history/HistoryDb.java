@@ -93,6 +93,9 @@ public class HistoryDb extends SQLiteOpenHelper {
         return out;
     }
 
+    /** Every row, newest-first — for export. */
+    public List<HistoryEntry> all() { return list(Integer.MAX_VALUE, 0, null); }
+
     public void setMeta(String k, String v) {
         ContentValues cv = new ContentValues(); cv.put("k", k); cv.put("v", v);
         getWritableDatabase().insertWithOnConflict(META, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
