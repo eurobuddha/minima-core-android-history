@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver notifyReceiver;
     private final Runnable syncTask = this::doSync;
     private ActivityResultLauncher<String> exportLauncher;
+    private ActivityResultLauncher<String> csvLauncher;
     private ActivityResultLauncher<String[]> importLauncher;
 
     private int chainBlock = 0;
@@ -110,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
         // Export/Import via the Storage Access Framework — back up the collected history to a file you keep.
         exportLauncher = registerForActivityResult(new ActivityResultContracts.CreateDocument("application/json"),
                 uri -> { if (uri != null) doExport(uri); });
+        csvLauncher = registerForActivityResult(new ActivityResultContracts.CreateDocument("text/csv"),
+                uri -> { if (uri != null) doExportCsv(uri); });
         importLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(),
                 uri -> { if (uri != null) doImport(uri); });
         findViewById(R.id.menuBtn).setOnClickListener(this::showMenu);
@@ -375,12 +378,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMenu(View anchor) {
         PopupMenu m = new PopupMenu(this, anchor);
-        m.getMenu().add(0, 1, 0, "Export history (backup)");
-        m.getMenu().add(0, 2, 1, "Import history (restore / merge)");
+        m.getMenu().add(0, 1, 0, "Export as JSON (backup)");
+        m.getMenu().add(0, 3, 1, "Export as CSV (spreadsheet)");
+        m.getMenu().add(0, 2, 2, "Import history (restore / merge)");
         m.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == 1) { exportLauncher.launch("minima-history.json"); return true; }
-            if (item.getItemId() == 2) { importLauncher.launch(new String[]{"application/json", "*/*"}); return true; }
-            return false;
+            switch (item.getItemId()) {
+                case 1: exportLauncher.launch("minima-history.json"); return true;
+                case 3: csvLauncher.launch("minima-history.csv"); return true;
+                case 2: importLauncher.launch(new String[]{"application/json", "*/*"}); return true;
+                default: return false;
+            }
         });
         m.show();
     }
@@ -430,6 +437,42 @@ public class MainActivity extends AppCompatActivity {
                 ui.post(() -> Toast.makeText(this, "Import failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
+    }
+
+    /** Spreadsheet-friendly CSV of the whole history (one row per transaction). Not re-importable — use
+     *  the JSON export for backup/restore. */
+    private void doExportCsv(Uri uri) {
+        io.execute(() -> {
+            try {
+                List<HistoryEntry> all = db.all();
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+                StringBuilder sb = new StringBuilder("txpowid,block,datetime,direction,amount,token,counterparty,deltas\n");
+                for (HistoryEntry e : all) {
+                    String signed = ("received".equals(e.direction) ? "" : "sent".equals(e.direction) ? "-" : "") + e.amount;
+                    sb.append(csv(e.txpowid)).append(',')
+                      .append(e.block).append(',')
+                      .append(csv(fmt.format(new Date(e.timemilli)))).append(',')
+                      .append(csv(e.direction)).append(',')
+                      .append(csv(signed)).append(',')
+                      .append(csv(e.tokenName)).append(',')
+                      .append(csv(e.counterparty)).append(',')
+                      .append(csv(e.deltas)).append('\n');
+                }
+                try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                    os.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                ui.post(() -> Toast.makeText(this, "Exported " + all.size() + " rows to CSV", Toast.LENGTH_SHORT).show());
+            } catch (Exception e) {
+                ui.post(() -> Toast.makeText(this, "CSV export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        });
+    }
+
+    /** CSV-escape a field: quote it if it has a comma/quote/newline; double any internal quotes. */
+    private static String csv(String s) {
+        if (s == null) return "";
+        if (s.contains(",") || s.contains("\"") || s.contains("\n")) return "\"" + s.replace("\"", "\"\"") + "\"";
+        return s;
     }
 
     private static String relative(long ms) {
