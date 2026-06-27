@@ -42,6 +42,7 @@ public class HistorySync {
     private void fetchPage(final int offset, final int pageNo) {
         act.node().cmd("history relevant:true max:" + PAGE + " offset:" + offset, new NodeApi.Cb() {
             @Override public void onResult(JSONObject j) {
+                act.markPaired(true);                 // we reached the node — hide the pairing banner
                 JSONObject r = j.optJSONObject("response");
                 JSONArray txpows = r != null ? r.optJSONArray("txpows") : null;
                 JSONArray details = r != null ? r.optJSONArray("details") : null;
@@ -65,7 +66,10 @@ public class HistorySync {
                     finish(true);
                 }
             }
-            @Override public void onError(String m) { finish(false); }
+            @Override public void onError(String m) {
+                if (NodeApi.ERR_NOT_ENABLED.equals(m)) act.markPaired(false);   // not enabled yet → show banner
+                finish(false);
+            }
         });
     }
 

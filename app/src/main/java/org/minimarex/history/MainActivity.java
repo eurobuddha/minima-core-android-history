@@ -135,9 +135,16 @@ public class MainActivity extends AppCompatActivity {
     // ---- pairing + node ----
 
     private void onPaired(boolean enabled) {
+        markPaired(enabled);
+        requestSync();   // try regardless — the sync result is the authoritative "is the node reachable" signal
+    }
+
+    /** Reflect node reachability in the pairing banner. Called by the register callback AND by the sync
+     *  (so enabling the app in Minima Core *after* opening this one is picked up on the next sync). */
+    public void markPaired(boolean enabled) {
         paired = enabled;
         pairingBanner.setVisibility(enabled ? View.GONE : View.VISIBLE);
-        if (enabled) { fetchBlock(); requestSync(); }
+        if (enabled && chainBlock == 0) fetchBlock();
     }
 
     private void fetchBlock() {
@@ -155,7 +162,8 @@ public class MainActivity extends AppCompatActivity {
     private void requestSync() { ui.removeCallbacks(syncTask); ui.postDelayed(syncTask, 400); }
 
     private void doSync() {
-        if (paired && !sync.isRunning()) { syncBtn.setText("⟳ …"); sync.start(); }
+        // Don't gate on `paired` — try the command; HistorySync flips the banner from the actual result.
+        if (!sync.isRunning()) { syncBtn.setText("⟳ …"); sync.start(); }
     }
 
     private final HistorySync.Listener syncListener = new HistorySync.Listener() {
