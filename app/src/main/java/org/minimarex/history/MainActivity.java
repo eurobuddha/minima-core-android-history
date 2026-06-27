@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int chainBlock = 0;
     private boolean paired = false;
+    private boolean lastSyncOk = true;
     private String currentSearch = "";
 
     @Override
@@ -163,17 +164,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void doSync() {
         // Don't gate on `paired` — try the command; HistorySync flips the banner from the actual result.
-        if (!sync.isRunning()) { syncBtn.setText("⟳ …"); sync.start(); }
+        if (!sync.isRunning()) { syncBtn.setText("⟳ …"); status.setText("Syncing…"); sync.start(); }
     }
 
     private final HistorySync.Listener syncListener = new HistorySync.Listener() {
-        @Override public void onProgress(int totalNew) { ui.post(() -> reloadList()); }
+        @Override public void onProgress(int totalNew) {
+            ui.post(() -> { status.setText("Syncing…  " + totalNew + " captured"); reloadList(); });
+        }
         @Override public void onDone(int totalNew, boolean ok) {
-            ui.post(() -> {
-                syncBtn.setText("⟳ Sync");
-                reloadList();
-                if (!ok) Toast.makeText(MainActivity.this, "Couldn't reach the node — showing stored history.", Toast.LENGTH_SHORT).show();
-            });
+            ui.post(() -> { lastSyncOk = ok; syncBtn.setText("⟳ Sync"); reloadList(); });
         }
     };
 
@@ -190,6 +189,10 @@ public class MainActivity extends AppCompatActivity {
     private void updateStatus() { io.execute(() -> { final int t = db.count(); ui.post(() -> updateStatus(t)); }); }
 
     private void updateStatus(int total) {
+        if (total == 0 && !lastSyncOk) {
+            status.setText("Couldn't read history — the node may be busy or a page too large. Tap ⟳ to retry.");
+            return;
+        }
         String s = total + (total == 1 ? " transaction" : " transactions");
         if (chainBlock > 0) s += " · synced to block " + chainBlock;
         String last = db.getMeta("last_sync_ts", "");
