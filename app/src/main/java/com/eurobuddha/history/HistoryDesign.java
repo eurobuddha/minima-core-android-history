@@ -1,4 +1,4 @@
-package org.minimarex.history;
+package com.eurobuddha.history;
 
 /** Shared dark + orange palette (matches the native Minima wallet/vestr/expert apps). */
 public final class HistoryDesign {

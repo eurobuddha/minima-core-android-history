@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "UTXO Wallet"
+rootProject.name = "Minima History"
 include ':app'

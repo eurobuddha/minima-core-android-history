@@ -1,4 +1,4 @@
-package org.minimarex.history;
+package com.eurobuddha.history;
 
 import android.content.ContentValues;
 import android.content.Context;

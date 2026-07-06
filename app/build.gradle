@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'org.minimarex.history'
+    namespace 'com.eurobuddha.history'
     compileSdk 36
 
     defaultConfig {
-        applicationId "org.minimarex.history"
+        applicationId "com.eurobuddha.history"
         minSdk 28
         targetSdk 35
         versionCode 201
