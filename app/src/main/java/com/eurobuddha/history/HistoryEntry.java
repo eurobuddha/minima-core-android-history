@@ -131,4 +131,33 @@ public class HistoryEntry {
     }
 
     private static BigDecimal bd(String s) { try { return new BigDecimal(s); } catch (Exception e) { return BigDecimal.ZERO; } }
+
+    // ----- split / consolidation display (a self-only coin reshuffle) -----
+    private static int count(String json) {
+        try { return json == null ? 0 : new JSONArray(json).length(); } catch (Exception e) { return 0; }
+    }
+    public boolean isSplit() { return "self".equals(direction) && count(outputs) > count(inputs) && count(outputs) > 1; }
+    public boolean isConsolidation() { return "self".equals(direction) && count(inputs) > count(outputs) && count(inputs) > 1; }
+    public boolean isReshuffle() { return isSplit() || isConsolidation(); }
+    public String reshuffleLabel() {
+        return isSplit() ? ("Split · " + count(outputs) + " coins") : ("Consolidation · " + count(inputs) + " coins");
+    }
+    /** For a reshuffle, the GROSS amount + token of the dominant output token (e.g. "500000  Minima") —
+     *  more informative than the net "0" a self-only transaction otherwise shows. */
+    public String grossDisplay() {
+        try {
+            JSONArray outs = new JSONArray(outputs);
+            java.util.Map<String, BigDecimal> sums = new java.util.HashMap<>();
+            for (int i = 0; i < outs.length(); i++) {
+                JSONObject o = outs.optJSONObject(i);
+                if (o == null) continue;
+                sums.merge(o.optString("tokenid", "0x00"), bd(o.optString("amount", "0")), BigDecimal::add);
+            }
+            String domTid = "0x00"; BigDecimal domSum = BigDecimal.ZERO;
+            for (java.util.Map.Entry<String, BigDecimal> en : sums.entrySet())
+                if (en.getValue().compareTo(domSum) > 0) { domSum = en.getValue(); domTid = en.getKey(); }
+            String name = Util.isMinima(domTid) ? "Minima" : domTid.equals(tokenid) ? tokenName : Util.shorten(domTid);
+            return Util.tidyAmount(domSum.stripTrailingZeros().toPlainString()) + "  " + name;
+        } catch (Exception e) { return Util.tidyAmount(amount) + "  " + tokenName; }
+    }
 }

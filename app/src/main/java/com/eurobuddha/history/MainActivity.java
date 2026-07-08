@@ -351,10 +351,12 @@ public class MainActivity extends AppCompatActivity {
                     : "sent".equals(e.direction) ? HistoryDesign.SENT : HistoryDesign.SELF;
             String g = "received".equals(e.direction) ? "↓" : "sent".equals(e.direction) ? "↑" : "⟲";
             String sign = e.incoming ? "+" : "sent".equals(e.direction) ? "−" : "";
+            boolean reshuffle = e.isReshuffle();
             h.glyph.setText(g); h.glyph.setTextColor(color);
-            h.line1.setText(sign + Util.tidyAmount(e.amount) + "  " + e.tokenName); h.line1.setTextColor(color);
+            h.line1.setText(reshuffle ? e.grossDisplay() : (sign + Util.tidyAmount(e.amount) + "  " + e.tokenName));
+            h.line1.setTextColor(color);
             String cp = e.counterparty.isEmpty() ? "" : Util.shorten(e.counterparty) + "  ·  ";
-            h.line2.setText(cp + relative(e.timemilli));
+            h.line2.setText((reshuffle ? e.reshuffleLabel() + "  ·  " : cp) + relative(e.timemilli));
             h.right.setText("#" + e.block);
             h.itemView.setOnClickListener(v -> showDetail(e));
         }
