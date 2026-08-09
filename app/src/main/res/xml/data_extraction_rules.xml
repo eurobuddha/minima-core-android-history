@@ -1,19 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Android 12+ backup/transfer rules — a DELIBERATE SPLIT, not a blanket disable.
+
+   NEVER to the cloud. `minima_history.db` is a complete record of the user's transactions — counterparties,
+   amounts, raw inputs and outputs (HistoryDb.java:19-38). Nothing in it authorises a spend, but it is a
+   full financial history and it has no business sitting in a cloud backup.
+
+   Device transfer keeps it. This archive is deliberately un-rebuildable: the class header states it
+   ACCUMULATES FOREVER and is never pruned precisely BECAUSE the node drops old history, so a resync cannot
+   restore it and there is no export path. Losing it on a new phone would destroy records the user cannot
+   get back by any other means, and a same-user device transfer is the one channel where carrying it is both
+   safe (no cloud copy) and clearly wanted.
+
+   An <include> makes this section allow-list only — the sync cursor prefs and everything else are excluded
+   implicitly. Do not add <exclude> entries alongside it: paths outside an included path are a lint error.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="root" path="." />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <include domain="database" path="minima_history.db" />
     </device-transfer>
-    -->
 </data-extraction-rules>

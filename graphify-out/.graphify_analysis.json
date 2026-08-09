@@ -1,0 +1,298 @@
+{
+  "communities": {
+    "0": [
+      "activityresultlauncher",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_count",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_insert",
+      "app_src_main_java_com_eurobuddha_history_mainactivity",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_java_handler",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_applyinsets",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_csv",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_doexport",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_doexportcsv",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_doimport",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_markpaired",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_oncreate",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_onpaired",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_openminimacore",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_relative",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_reloadlist",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_requestsync",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_showmenu",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_ui",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_updatestatus",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter_setdata",
+      "appcompatactivity",
+      "broadcastreceiver",
+      "bundle",
+      "edittext",
+      "recyclerview",
+      "uri",
+      "view"
+    ],
+    "1": [
+      "adapter",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_grossdisplay",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_addbreakdown",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_copyrow",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_dp",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_kv",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_prettydeltas",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_showdetail",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter_onbindviewholder",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter_oncreateviewholder",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_vh",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_vh_vh",
+      "app_src_main_java_com_eurobuddha_history_util_util_shorten",
+      "app_src_main_java_com_eurobuddha_history_util_util_tidyamount",
+      "linearlayout",
+      "nonnull",
+      "textview",
+      "viewgroup",
+      "viewholder"
+    ],
+    "2": [
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_getmeta",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_setmeta",
+      "app_src_main_java_com_eurobuddha_history_historysync",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_fetchpage",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_finish",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_historysync",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_isrunning",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_markbackfilldone",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_overlimit",
+      "app_src_main_java_com_eurobuddha_history_historysync_historysync_start",
+      "app_src_main_java_com_eurobuddha_history_historysync_listener",
+      "app_src_main_java_com_eurobuddha_history_historysync_listener_ondone",
+      "app_src_main_java_com_eurobuddha_history_historysync_listener_onprogress",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_chainblock",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_dosync",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_node"
+    ],
+    "3": [
+      "app_src_main_java_com_eurobuddha_history_historyentry",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_bd",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_coins",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_count",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_firstaddr",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_from",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_fromjson",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_isconsolidation",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_isreshuffle",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_issplit",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_reshufflelabel",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_tojson",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_tokennamefor",
+      "app_src_main_java_com_eurobuddha_history_historyentry_historyentry_txn",
+      "app_src_main_java_com_eurobuddha_history_historyentry_java_jsonobject",
+      "jsonarray"
+    ],
+    "4": [
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_fetchblock",
+      "app_src_main_java_com_eurobuddha_history_nodeapi",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_cb",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_cb_onerror",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_cb_onresult",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_java_context",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_java_handler",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_java_jsonobject",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi_cmd",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi_dead",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi_nodeapi",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi_timeoutfor",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_pairinglistener",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_pairinglistener_onenabled",
+      "minimaapi"
+    ],
+    "5": [
+      "app_src_main_java_com_eurobuddha_history_tokenmeta",
+      "app_src_main_java_com_eurobuddha_history_tokenmeta_tokenmeta",
+      "app_src_main_java_com_eurobuddha_history_tokenmeta_tokenmeta_decode",
+      "app_src_main_java_com_eurobuddha_history_tokenmeta_tokenmeta_first",
+      "app_src_main_java_com_eurobuddha_history_tokenmeta_tokenmeta_parse",
+      "app_src_main_java_com_eurobuddha_history_util",
+      "app_src_main_java_com_eurobuddha_history_util_java_jsonobject",
+      "app_src_main_java_com_eurobuddha_history_util_util",
+      "app_src_main_java_com_eurobuddha_history_util_util_decimalplaces",
+      "app_src_main_java_com_eurobuddha_history_util_util_extracttxpowid",
+      "app_src_main_java_com_eurobuddha_history_util_util_isminima",
+      "app_src_main_java_com_eurobuddha_history_util_util_isvalidaddress",
+      "app_src_main_java_com_eurobuddha_history_util_util_tokenname",
+      "app_src_main_java_com_eurobuddha_history_util_util_util"
+    ],
+    "6": [
+      "app_src_main_java_com_eurobuddha_history_historydb",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_all",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_historydb",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_list",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_oncreate",
+      "app_src_main_java_com_eurobuddha_history_historydb_historydb_onupgrade",
+      "app_src_main_java_com_eurobuddha_history_historydb_java_context",
+      "app_src_main_java_com_eurobuddha_history_historydb_java_override",
+      "sqlitedatabase",
+      "sqliteopenhelper"
+    ],
+    "7": [
+      "app_src_main_java_com_eurobuddha_history_mainactivity_java_override",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_ondestroy",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity_onresume",
+      "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter_getitemcount",
+      "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi_ondestroy"
+    ],
+    "8": [
+      "gradlew",
+      "gradlew__entry",
+      "gradlew_die",
+      "gradlew_save",
+      "gradlew_warn"
+    ],
+    "9": [
+      "app_src_main_java_com_eurobuddha_history_historydesign",
+      "app_src_main_java_com_eurobuddha_history_historydesign_historydesign",
+      "app_src_main_java_com_eurobuddha_history_historydesign_historydesign_historydesign"
+    ],
+    "10": [
+      "app_build"
+    ],
+    "11": [
+      "build"
+    ],
+    "12": [
+      "settings"
+    ]
+  },
+  "cohesion": {
+    "0": 0.13793103448275862,
+    "1": 0.22631578947368422,
+    "2": 0.18382352941176472,
+    "3": 0.27205882352941174,
+    "4": 0.225,
+    "5": 0.18681318681318682,
+    "6": 0.2909090909090909,
+    "7": 0.4,
+    "8": 0.6,
+    "9": 0.6666666666666666,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0
+  },
+  "gods": [
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_mainactivity_mainactivity",
+      "label": "MainActivity",
+      "degree": 43
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_historyentry_historyentry",
+      "label": "HistoryEntry",
+      "degree": 21
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_historydb_historydb",
+      "label": "HistoryDb",
+      "degree": 15
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_nodeapi_nodeapi",
+      "label": "NodeApi",
+      "degree": 14
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_historysync_historysync",
+      "label": "HistorySync",
+      "degree": 12
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_mainactivity_txadapter",
+      "label": "TxAdapter",
+      "degree": 9
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_util_util",
+      "label": "Util",
+      "degree": 9
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_mainactivity_vh",
+      "label": "VH",
+      "degree": 6
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_nodeapi_cb",
+      "label": "Cb",
+      "degree": 6
+    },
+    {
+      "id": "app_src_main_java_com_eurobuddha_history_historysync_listener",
+      "label": "Listener",
+      "degree": 5
+    }
+  ],
+  "surprises": [
+    {
+      "source": "HistorySync",
+      "target": "HistoryDb",
+      "source_files": [
+        "app/src/main/java/com/eurobuddha/history/HistorySync.java",
+        "app/src/main/java/com/eurobuddha/history/HistoryDb.java"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainActivity",
+      "target": "HistoryDb",
+      "source_files": [
+        "app/src/main/java/com/eurobuddha/history/MainActivity.java",
+        "app/src/main/java/com/eurobuddha/history/HistoryDb.java"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "TxAdapter",
+      "target": "HistoryEntry",
+      "source_files": [
+        "app/src/main/java/com/eurobuddha/history/MainActivity.java",
+        "app/src/main/java/com/eurobuddha/history/HistoryEntry.java"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "HistorySync",
+      "target": "MainActivity",
+      "source_files": [
+        "app/src/main/java/com/eurobuddha/history/HistorySync.java",
+        "app/src/main/java/com/eurobuddha/history/MainActivity.java"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "MainActivity",
+      "target": "Listener",
+      "source_files": [
+        "app/src/main/java/com/eurobuddha/history/MainActivity.java",
+        "app/src/main/java/com/eurobuddha/history/HistorySync.java"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

@@ -8,6 +8,10 @@
         <package android:name="org.minimarex.minimacore" />
     </queries>
 
+    <!-- allowBackup stays TRUE here on purpose — see res/xml/data_extraction_rules.xml. The transaction
+         archive (`minima_history.db`) must never reach a cloud, but it is deliberately un-rebuildable: it
+         accumulates forever BECAUSE the node drops old history, so a resync cannot restore it and there is
+         no export path. Cloud backup excludes everything; same-user device transfer carries the archive. -->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
