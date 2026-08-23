@@ -86,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
     private boolean paired = false;
     private boolean lastSyncOk = true;
     private String currentSearch = "";
+    // Wallet ownership sets for the owned/contract/external address labels. Loaded from the meta
+    // cache before the first list render (instant + offline), refreshed from the node on pairing and
+    // after each sync. Published wholesale on the UI thread; IO reads whichever snapshot it sees.
+    private volatile Ownership own = new Ownership();
+    private boolean refreshingOwn = false;
+    private boolean hideForeign = false;   // menu toggle: hide entries with no owned address/coin
 
     @Override
     protected void onCreate(Bundle b) {
@@ -101,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
 
         applyInsets();
         db = new HistoryDb(this);
+        own = Ownership.fromMeta(db);   // last-good labels, before the node ever replies
+        hideForeign = "true".equals(db.getMeta("hide_foreign", "false"));
         sync = new HistorySync(this, db, syncListener);
         adapter = new TxAdapter();
         recycler.setLayoutManager(new LinearLayoutManager(this));
@@ -156,7 +164,36 @@ public class MainActivity extends AppCompatActivity {
 
     private void onPaired(boolean enabled) {
         markPaired(enabled);
+        refreshOwnership();
         requestSync();   // try regardless — the sync result is the authoritative "is the node reachable" signal
+    }
+
+    /**
+     * Refresh the wallet ownership sets (`scripts` + `keys`) that drive the owned/contract/external
+     * address labels. Failure-safe: only a successful, non-empty parse replaces (and persists) the
+     * current set — an unreachable node or empty reply keeps the last good labels rather than
+     * showing wrong or missing ones.
+     */
+    private void refreshOwnership() {
+        if (refreshingOwn || node == null) return;
+        refreshingOwn = true;
+        node.cmd("scripts", new NodeApi.Cb() {
+            @Override public void onResult(JSONObject scripts) {
+                node.cmd("keys", new NodeApi.Cb() {
+                    @Override public void onResult(JSONObject keys) { adopt(Ownership.parse(scripts, keys)); }
+                    @Override public void onError(String m) { adopt(Ownership.parse(scripts, null)); }
+                });
+            }
+            @Override public void onError(String m) { refreshingOwn = false; }
+        });
+    }
+
+    private void adopt(Ownership parsed) {
+        refreshingOwn = false;
+        if (parsed == null) return;   // suspect reply — keep the last good set
+        own = parsed;
+        io.execute(() -> parsed.saveTo(db));
+        reloadList();
     }
 
     /** Reflect node reachability in the pairing banner. Called by the register callback AND by the sync
@@ -191,17 +228,27 @@ public class MainActivity extends AppCompatActivity {
             ui.post(() -> { status.setText("Syncing…  " + totalNew + " captured"); reloadList(); });
         }
         @Override public void onDone(int totalNew, boolean ok) {
-            ui.post(() -> { lastSyncOk = ok; syncBtn.setText("⟳ Sync"); reloadList(); });
+            ui.post(() -> { lastSyncOk = ok; syncBtn.setText("⟳ Sync"); reloadList(); refreshOwnership(); });
         }
     };
 
     // ---- list ----
 
     private void reloadList() {
+        final Ownership o = own;   // snapshot — published wholesale, never mutated
         io.execute(() -> {
-            final List<HistoryEntry> rows = db.list(MAX_ROWS, 0, currentSearch);
+            List<HistoryEntry> rows = db.list(MAX_ROWS, 0, currentSearch);
+            // Hide-foreign filter: drop entries that touch none of the wallet's own addresses/coins
+            // (pure contract/external activity a polluted node adopted). No-op until ownership is
+            // known — never blank the list for lack of data.
+            if (hideForeign && o.isLoaded()) {
+                List<HistoryEntry> kept = new ArrayList<>();
+                for (HistoryEntry e : rows) if (e.involvesWallet(o)) kept.add(e);
+                rows = kept;
+            }
+            final List<HistoryEntry> shown = rows;
             final int total = db.count();
-            ui.post(() -> { adapter.setData(rows); updateStatus(total); });
+            ui.post(() -> { adapter.setData(shown); updateStatus(total); });
         });
     }
 
@@ -232,7 +279,20 @@ public class MainActivity extends AppCompatActivity {
         kv(box, "Time", new SimpleDateFormat("dd MMM yyyy  HH:mm:ss", Locale.ENGLISH).format(new Date(e.timemilli)));
         copyRow(box, "Txpow id", e.txpowid);
         if (!Util.isMinima(e.tokenid)) copyRow(box, "Tokenid", e.tokenid);
-        if (!e.counterparty.isEmpty()) copyRow(box, e.incoming ? "From" : "To", e.counterparty);
+        if (!e.counterparty.isEmpty()) {
+            badge(box, own.classify(e.counterparty), false, 0);
+            copyRow(box, e.incoming ? "From" : "To", e.counterparty);
+        }
+        // Entry-level ownership: none of the wallet's addresses/coins in this transaction at all —
+        // this is exactly what foreign contract activity adopted by a polluted node looks like.
+        if (own.isLoaded() && !e.involvesWallet(own)) {
+            TextView warn = new TextView(this);
+            warn.setText("No wallet address involved — contract/external activity");
+            warn.setTextColor(HistoryDesign.ACCENT);
+            warn.setTextSize(12f);
+            warn.setPadding(0, dp(6), 0, dp(2));
+            box.addView(warn);
+        }
         addDeltas(box, e.deltas);
         addBreakdown(box, "Inputs", e.inputs);
         addBreakdown(box, "Outputs", e.outputs);
@@ -289,6 +349,20 @@ public class MainActivity extends AppCompatActivity {
         p.addView(t);
     }
 
+    /** Ownership badge line: YOURS / CONTRACT / EXTERNAL (nothing while ownership is unknown).
+     *  {@code mine} upgrades a CONTRACT badge to "CONTRACT · YOURS" — a shared-script coin the
+     *  wallet controls via its state keys (e.g. the user's own casino bet). */
+    private void badge(LinearLayout p, Ownership.Kind kind, boolean mine, int indentDp) {
+        if (kind == Ownership.Kind.UNKNOWN) return;
+        TextView t = new TextView(this);
+        t.setText(Ownership.label(kind) + (mine && kind == Ownership.Kind.CONTRACT ? " · YOURS" : ""));
+        t.setTextColor(mine ? HistoryDesign.RECEIVED : Ownership.color(kind));
+        t.setTextSize(11f);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setPadding(dp(indentDp), dp(4), 0, 0);
+        p.addView(t);
+    }
+
     private void addBreakdown(LinearLayout p, String title, String json) {
         try {
             JSONArray a = new JSONArray(json);
@@ -299,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
                 if (c == null) continue;
                 String tid = c.optString("tokenid", "0x00");
                 bullet(p, "• " + Util.tidyAmount(c.optString("amount", "")) + (Util.isMinima(tid) ? "  Minima" : ""));
+                badge(p, own.classify(c.optString("addr", "")), c.optBoolean("mine", false), 14);
                 if (!Util.isMinima(tid)) copyRow(p, "token", tid, 14);
                 copyRow(p, "addr", c.optString("addr", ""), 14);
             }
@@ -371,7 +446,10 @@ public class MainActivity extends AppCompatActivity {
             h.glyph.setText(g); h.glyph.setTextColor(color);
             h.line1.setText(reshuffle ? e.grossDisplay() : (sign + Util.tidyAmount(e.amount) + "  " + e.tokenName));
             h.line1.setTextColor(color);
-            String cp = e.counterparty.isEmpty() ? "" : Util.shorten(e.counterparty) + "  ·  ";
+            // Counterparty ownership tag (full address is one tap away in the detail view).
+            Ownership.Kind ck = own.classify(e.counterparty);
+            String tag = ck == Ownership.Kind.UNKNOWN ? "" : Ownership.label(ck) + "  ·  ";
+            String cp = e.counterparty.isEmpty() ? "" : Util.shorten(e.counterparty) + "  ·  " + tag;
             h.line2.setText((reshuffle ? e.reshuffleLabel() + "  ·  " : cp) + relative(e.timemilli));
             h.right.setText("#" + e.block);
             h.itemView.setOnClickListener(v -> showDetail(e));
@@ -385,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
     public NodeApi node() { return node; }
     public Handler ui() { return ui; }
     public int chainBlock() { return chainBlock; }
+    public Ownership ownership() { return own; }
 
     private void openMinimaCore() {
         Intent launch = getPackageManager().getLaunchIntentForPackage(NODE_PKG);
@@ -399,11 +478,17 @@ public class MainActivity extends AppCompatActivity {
         m.getMenu().add(0, 1, 0, "Export as JSON (backup)");
         m.getMenu().add(0, 3, 1, "Export as CSV (spreadsheet)");
         m.getMenu().add(0, 2, 2, "Import history (restore / merge)");
+        m.getMenu().add(0, 4, 3, "Hide foreign contract activity").setCheckable(true).setChecked(hideForeign);
         m.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1: exportLauncher.launch("minima-history.json"); return true;
                 case 3: csvLauncher.launch("minima-history.csv"); return true;
                 case 2: importLauncher.launch(new String[]{"application/json", "*/*"}); return true;
+                case 4:
+                    hideForeign = !hideForeign;
+                    io.execute(() -> db.setMeta("hide_foreign", hideForeign ? "true" : "false"));
+                    reloadList();
+                    return true;
                 default: return false;
             }
         });

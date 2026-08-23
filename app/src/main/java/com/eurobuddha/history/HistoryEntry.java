@@ -49,7 +49,31 @@ public class HistoryEntry {
         return e;
     }
 
-    public static HistoryEntry from(JSONObject txpow, JSONObject detail) {
+    /** True when this transaction touches the wallet at all: an input/output (or counterparty)
+     *  address the wallet OWNS, or a coin stamped {@code mine} at sync time (wallet key in its
+     *  state — e.g. the user's own bet at a shared contract address). Entries where this is false
+     *  are pure contract/external activity (what a trackall-polluted node adopted). */
+    public boolean involvesWallet(Ownership own) {
+        if (own.classify(counterparty) == Ownership.Kind.OWNED) return true;
+        return anyOwnedOrMine(inputs, own) || anyOwnedOrMine(outputs, own);
+    }
+
+    private static boolean anyOwnedOrMine(String json, Ownership own) {
+        try {
+            JSONArray a = new JSONArray(json);
+            for (int i = 0; i < a.length(); i++) {
+                JSONObject c = a.optJSONObject(i);
+                if (c == null) continue;
+                if (c.optBoolean("mine", false)) return true;
+                if (own.classify(c.optString("addr", "")) == Ownership.Kind.OWNED) return true;
+            }
+        } catch (Exception ignored) {}
+        return false;
+    }
+
+    public static HistoryEntry from(JSONObject txpow, JSONObject detail) { return from(txpow, detail, null); }
+
+    public static HistoryEntry from(JSONObject txpow, JSONObject detail, Ownership own) {
         HistoryEntry e = new HistoryEntry();
         e.txpowid = txpow.optString("txpowid", "");
         JSONObject hdr = txpow.optJSONObject("header");
@@ -78,8 +102,8 @@ public class HistoryEntry {
         JSONObject txn = txn(txpow);
         JSONArray ins = txn != null ? txn.optJSONArray("inputs") : null;
         JSONArray outs = txn != null ? txn.optJSONArray("outputs") : null;
-        e.inputs = coins(ins);
-        e.outputs = coins(outs);
+        e.inputs = coins(ins, own);
+        e.outputs = coins(outs, own);
         // received → show a sender (input) address; sent/self → show a recipient (output) address
         e.counterparty = firstAddr(e.incoming ? ins : outs);
 
@@ -106,7 +130,7 @@ public class HistoryEntry {
         return Util.shorten(tid);
     }
 
-    private static String coins(JSONArray arr) {
+    private static String coins(JSONArray arr, Ownership own) {
         JSONArray out = new JSONArray();
         if (arr != null) for (int i = 0; i < arr.length(); i++) {
             JSONObject c = arr.optJSONObject(i);
@@ -116,10 +140,25 @@ public class HistoryEntry {
                 o.put("addr", c.optString("miniaddress", c.optString("address", "")));
                 o.put("amount", c.optString("amount", c.optString("tokenamount", "")));
                 o.put("tokenid", c.optString("tokenid", "0x00"));
+                // Sync-time enrichment: a wallet key/address inside the coin's STATE marks a
+                // shared-contract coin the wallet controls (e.g. our own casino bet). Only
+                // available here — state isn't stored — so old rows simply lack the flag.
+                if (own != null && own.isLoaded() && stateMatchesWallet(c, own)) o.put("mine", true);
                 out.put(o);
             } catch (Exception ignored) {}
         }
         return out.toString();
+    }
+
+    private static boolean stateMatchesWallet(JSONObject coin, Ownership own) {
+        JSONArray st = coin.optJSONArray("state");
+        if (st == null) return false;
+        for (int i = 0; i < st.length(); i++) {
+            JSONObject sv = st.optJSONObject(i);
+            if (sv == null) continue;
+            if (own.matchesWallet(sv.optString("data", ""))) return true;
+        }
+        return false;
     }
 
     private static String firstAddr(JSONArray arr) {

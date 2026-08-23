@@ -71,7 +71,7 @@ public class HistorySync {
                     JSONObject tx = txpows.optJSONObject(i);
                     JSONObject det = (details != null && i < details.length()) ? details.optJSONObject(i) : null;
                     if (tx == null) continue;
-                    HistoryEntry e = HistoryEntry.from(tx, det);
+                    HistoryEntry e = HistoryEntry.from(tx, det, act.ownership());
                     if (e.txpowid.isEmpty()) continue;
                     if (db.insert(e)) pageNew++; else hitKnown = true;
                 }
