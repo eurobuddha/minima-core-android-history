@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
     private void kv(LinearLayout p, String k, String v) {
         TextView t = new TextView(this);
         t.setText(k + ":  " + v);
-        t.setTextColor(HistoryDesign.TEXT);
+        // Inherit the native dialog text colour in both system themes.
         t.setTextSize(13f);
         t.setPadding(0, dp(4), 0, dp(4));
         t.setTextIsSelectable(true);
@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
     private void bullet(LinearLayout p, String text) {
         TextView t = new TextView(this);
         t.setText(text);
-        t.setTextColor(HistoryDesign.TEXT);
+        // Inherit the native dialog text colour in both system themes.
         t.setTextSize(12f);
         t.setPadding(dp(6), dp(4), 0, 0);
         t.setTextIsSelectable(true);
