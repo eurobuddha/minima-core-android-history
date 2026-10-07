@@ -41,7 +41,7 @@ public class HistoryEntry {
         e.txpowid = o.optString("txpowid", "");
         e.block = o.optLong("block"); e.timemilli = o.optLong("timemilli");
         e.direction = o.optString("direction", "self"); e.incoming = o.optBoolean("incoming");
-        e.tokenid = o.optString("tokenid", "0x00"); e.tokenName = o.optString("tokenName", "");
+        e.tokenid = o.optString("tokenid", "0x00"); e.tokenName = Util.tokenName(o.opt("tokenName"), e.tokenid);
         e.amount = o.optString("amount", "0");
         e.deltas = o.optString("deltas", "{}"); e.counterparty = o.optString("counterparty", "");
         e.inputs = o.optString("inputs", "[]"); e.outputs = o.optString("outputs", "[]");

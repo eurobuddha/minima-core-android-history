@@ -84,7 +84,7 @@ public class HistoryDb extends SQLiteOpenHelper {
                 HistoryEntry e = new HistoryEntry();
                 e.txpowid = c.getString(0); e.block = c.getLong(1); e.timemilli = c.getLong(2);
                 e.direction = c.getString(3); e.incoming = c.getInt(4) == 1;
-                e.tokenid = c.getString(5); e.tokenName = c.getString(6); e.amount = c.getString(7);
+                e.tokenid = c.getString(5); e.tokenName = Util.tokenName(c.getString(6), e.tokenid); e.amount = c.getString(7);
                 e.deltas = c.getString(8); e.counterparty = c.getString(9);
                 e.inputs = c.getString(10); e.outputs = c.getString(11); e.syncedAt = c.getLong(12);
                 out.add(e);

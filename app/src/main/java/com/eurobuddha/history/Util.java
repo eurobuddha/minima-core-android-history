@@ -37,19 +37,7 @@ public final class Util {
      * or (for raw coin entries) nested. Pull a human-readable name out of whatever we get.
      */
     public static String tokenName(Object token, String tokenid) {
-        if (isMinima(tokenid)) return "Minima";
-        if (token instanceof String) return (String) token;
-        if (token instanceof JSONObject) {
-            JSONObject t = (JSONObject) token;
-            Object name = t.opt("name");
-            if (name instanceof JSONObject) {
-                return ((JSONObject) name).optString("name", "Token");
-            }
-            if (name instanceof String && !((String) name).isEmpty()) {
-                return (String) name;
-            }
-        }
-        return "Token";
+        return TokenMeta.parse(token, tokenid).name;
     }
 
     /** Pull a txpowid out of a posted-transaction response, falling back to the given id. */

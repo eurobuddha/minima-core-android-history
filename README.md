@@ -42,6 +42,6 @@ Versioned APKs + changelog: **[eurobuddha/minima-core-apks](https://github.com/e
 (tags `minima-history-v<version>`).
 
 ## Layout
-- `org/minimarex/history/` — `MainActivity` (list + search + detail), `HistoryDb` (persistent txpowid-keyed
+- `com/eurobuddha/history/` — `MainActivity` (list + search + detail), `HistoryDb` (persistent txpowid-keyed
   SQLite), `HistoryEntry` (parser), `HistorySync` (bounded paged sync), `HistoryDesign`; reused `NodeApi`
   (IPC), `TokenMeta`, `Util`.
