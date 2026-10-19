@@ -10,8 +10,8 @@ android {
         applicationId "com.eurobuddha.history"
         minSdk 28
         targetSdk 35
-        versionCode 311
-        versionName "0.3.11"
+        versionCode 312
+        versionName "0.3.12"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,6 +41,7 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    testOptions { unitTests.returnDefaultValues = true }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -48,6 +49,7 @@ android {
 }
 
 dependencies {
+    testImplementation 'org.mockito:mockito-core:5.12.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20240303'
 

@@ -13,3 +13,18 @@ Actual APK package/version and Minima family signing certificate verified.
 Signed local candidate: dist/history-0.3.11-candidate.apk
 SHA256: 6e18607e7f8ea787b9e9943f6fb59fa43f7fd4c99c1d2b36eda8d67f0247cea9
 No installation or publication. Full app parity/review remains in progress.
+
+History0.3.12/code312 — incomplete backfill repair (shared with Pandamonium1.9.108)
+Reused HistorySync adaptive same-offset retry and integrated lifecycle cancellation.
+At page size1, bounded retries retain the failed offset. Failure/fetch-limit no
+longer updates successful-sync timestamps. Malformed status/rows cannot silently
+be skipped. A versioned completion marker rescans retained history once, ignoring
+older markers that could have hidden gaps. Already archived rows remain intact.
+A permanently unreadable record or600-fetch cap leaves the scan incomplete; this
+cannot recover records already removed from the node's retained history.
+Eight new mocked regressions;10 total tests, zero failures/errors/skips. Signed
+release build passes; lint0 errors48 warnings. Actual package/version and family
+certificate verified. Reviewed adapter, generated/shared source, caller cancellation,
+config and tests: approve this bounded repair; broader review still in progress.
+Candidate: dist/history-0.3.12-candidate.apk with adjacent SHA256 sidecar.
+No node transactions, installation or publication.

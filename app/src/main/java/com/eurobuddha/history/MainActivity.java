@@ -597,6 +597,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (sync != null) sync.cancel();
         ui.removeCallbacks(syncTask);
         if (notifyReceiver != null) try { unregisterReceiver(notifyReceiver); } catch (Exception ignored) {}
         if (node != null) node.onDestroy();
