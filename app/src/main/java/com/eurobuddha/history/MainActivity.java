@@ -318,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
     private void copyRow(LinearLayout p, String k, final String v, int indentDp) {
         TextView t = new TextView(this);
         t.setText(k + ":  " + v + "   (tap to copy)");
-        t.setTextColor(HistoryDesign.DIM);
         t.setTextSize(12f);
         t.setTypeface(Typeface.MONOSPACE);
         t.setPadding(dp(indentDp), dp(4), 0, dp(4));

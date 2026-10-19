@@ -1,0 +1,15 @@
+Pandamonium display repair propagation — history 0.3.11 (311)
+
+Copyable transaction details inherit native dialog text colour in both system themes, matching existing kv and bullet rows.
+Reused from minima-core-android feature/bear-languages-2026-10-16:
+scripts/adapt-pandamonium-history-languages.py, copyRow text colour removal.
+
+Review: inspected changed code/resources, existing themes and callers. No new
+blocking findings in this display change. Node operations and stored data unchanged.
+Validation: testDebugUnitTest, assembleRelease, lintRelease succeeded offline.
+2 existing metadata tests passed.
+Lint: 0 errors, 47 warnings. No physical device check; Fold disconnected.
+Actual APK package/version and Minima family signing certificate verified.
+Signed local candidate: dist/history-0.3.11-candidate.apk
+SHA256: 6e18607e7f8ea787b9e9943f6fb59fa43f7fd4c99c1d2b36eda8d67f0247cea9
+No installation or publication. Full app parity/review remains in progress.
