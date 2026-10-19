@@ -26,7 +26,7 @@ public class HistorySyncTest {
             when(screen.node()).thenReturn(node); when(screen.ui()).thenReturn(handler);
             when(db.getMeta(anyString(),anyString())).thenAnswer(i -> meta.getOrDefault(i.getArgument(0),i.getArgument(1)));
             doAnswer(i->{meta.put(i.getArgument(0),i.getArgument(1));return null;}).when(db).setMeta(anyString(),anyString());
-            when(db.insert(any())).thenReturn(true);
+            when(db.insertFromNode(any())).thenReturn(true);
             when(handler.postDelayed(any(Runnable.class),anyLong())).thenAnswer(i->{queue.add(i.getArgument(0));return true;});
             doAnswer(i->{commands.add(i.getArgument(0));reply=i.getArgument(1);return null;}).when(node).cmd(anyString(),any());
             sync = new HistorySync(screen,db,listener);
@@ -55,13 +55,13 @@ public class HistorySyncTest {
         verify(f.listener).onDone(1,true);assertEquals("true",f.meta.get("backfill_complete_v2"));
     }
     @Test public void oldCompletionMarkerCannotHidePreviouslySkippedRows() throws Exception {
-        Fixture f=new Fixture();f.meta.put("backfill_done","true");when(f.db.insert(any())).thenReturn(false);
+        Fixture f=new Fixture();f.meta.put("backfill_done","true");when(f.db.insertFromNode(any())).thenReturn(false);
         f.sync.start();f.reply.onResult(page(8));
         assertTrue(f.sync.isRunning());f.next();assertTrue(f.commands.get(1).endsWith("offset:8"));
         f.reply.onResult(page(0));verify(f.listener).onDone(0,true);
     }
     @Test public void verifiedBackfillStillUsesTheIncrementalKnownRowStop() throws Exception {
-        Fixture f=new Fixture();f.meta.put("backfill_complete_v2","true");when(f.db.insert(any())).thenReturn(false);
+        Fixture f=new Fixture();f.meta.put("backfill_complete_v2","true");when(f.db.insertFromNode(any())).thenReturn(false);
         f.sync.start();f.reply.onResult(page(8));assertFalse(f.sync.isRunning());assertTrue(f.queue.isEmpty());
         verify(f.listener).onDone(0,true);
     }
@@ -76,7 +76,7 @@ public class HistorySyncTest {
         Fixture f=new Fixture();JSONObject bad=page(2);
         bad.getJSONObject("response").getJSONArray("txpows").put(1,new JSONObject());f.sync.start();
         while(f.sync.isRunning()){f.reply.onResult(bad);if(!f.queue.isEmpty())f.next();}
-        verify(f.db,never()).insert(any());verify(f.listener).onDone(0,false);assertTrue(f.meta.isEmpty());
+        verify(f.db,never()).insertFromNode(any());verify(f.listener).onDone(0,false);assertTrue(f.meta.isEmpty());
     }
     @Test public void fetchLimitPreservesPriorSuccessfulSyncMetadata() throws Exception {
         Fixture f=new Fixture();f.meta.put("last_sync_ts","123");f.sync.start();

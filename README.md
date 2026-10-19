@@ -18,8 +18,9 @@ local node over the broadcast-Intent IPC (`minimaapi`). No internet permission.
 - **IPC-safe by design:** `history` is the heavy command that can overwhelm an un-hardened node, so sync
   is bounded (`max:25` ≈190 KB/page), incremental, debounced on `NEWBLOCK`, with a delay between pages —
   never an unbounded loop.
-- **Direction + amount** come from the node's `details.difference` (net per-token effect): positive →
-  received, negative → sent, zero → self.
+- **Direction + amount** are calculated from inputs and outputs at the Core wallet’s own addresses.
+  Tracked scripts belonging to other wallets do not turn a send into a split. Cached native records
+  are corrected before listing, searching or exporting; old token records need a fresh scaled snapshot.
 - **The list is served from the local DB** — instant, offline, searchable. The node is touched only to sync.
 
 ## Scope

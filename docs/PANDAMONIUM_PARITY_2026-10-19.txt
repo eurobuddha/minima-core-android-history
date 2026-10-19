@@ -28,3 +28,25 @@ certificate verified. Reviewed adapter, generated/shared source, caller cancella
 config and tests: approve this bounded repair; broader review still in progress.
 Candidate: dist/history-0.3.12-candidate.apk with adjacent SHA256 sidecar.
 No node transactions, installation or publication.
+
+History0.3.13/code313 — Core-owned history accounting parity
+Reuses host2.0.21 scripts/adapt-pandamonium-history-wallet-scope.py and
+scripts/pandamonium-sources/history-wallet-scope.inc unchanged, applying the
+list/export calls to standalone MainActivity (host HistoryScreen). Keeps native
+IPC, existing schema and archived transaction evidence. Cached native sends and
+receipts involving tracked wallets are repaired; genuine owned splits retained.
+Legacy token rows lacking display-unit metadata require a fresh node snapshot.
+
+Validation:20 debug +20 release tests pass, zero failures/errors/skips. Includes
+seven ownership/scaled-unit cases and three real SQLite cached-repair/search/export/
+reopen cases from the host, plus all existing tests. Offline signed release and
+lint pass (0errors,49warnings). APK package/version, ZIP and Minima Family
+certificate verified. No device install, transaction, or standalone publication.
+
+Code Review
+Summary: scoped reuse of the phone-verified accounting fix; no transaction execution
+or key handling changed. Read all changed source, DB/sync/callers, tests/build config.
+Findings: no new blocking finding. Wider History/standalone review remains open.
+Verdict: Approve this parity checkpoint.
+Candidate:dist/history-0.3.13-candidate.apk
+SHA256:6f2cfa8ec8854d24344957deda6e0ae5f9cdbca6e5f6c7f714b03c976ed2bc01

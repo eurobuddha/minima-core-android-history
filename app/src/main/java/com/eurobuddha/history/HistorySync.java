@@ -85,7 +85,7 @@ public class HistorySync {
                     if (tx == null) continue;
                     HistoryEntry e = HistoryEntry.from(tx, det, act.ownership());
                     if (e.txpowid.isEmpty()) continue;
-                    if (db.insert(e)) pageNew++; else hitKnown = true;
+                    if (db.insertFromNode(e)) pageNew++; else hitKnown = true;
                 }
                 totalNew += pageNew;
                 if (pageNew > 0 && listener != null) listener.onProgress(totalNew);

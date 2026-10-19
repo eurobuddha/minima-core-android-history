@@ -41,8 +41,31 @@ public class HistoryDb extends SQLiteOpenHelper {
     // Never drop the table (permanence). Future versions add columns via ALTER here.
     @Override public void onUpgrade(SQLiteDatabase db, int o, int n) { onCreate(db); }
 
+    private Ownership reconciledOwnership;
+
+    /** Correct existing rows before search/export; retain IDs, timestamps and coin evidence. */
+    public synchronized void reconcile(Ownership own) {
+        if (own == null || !own.isLoaded() || reconciledOwnership == own) return;
+        SQLiteDatabase database=getWritableDatabase();
+        database.beginTransaction();
+        try {
+            for (HistoryEntry entry:all()) {
+                if (!entry.reconcile(own)) continue;
+                ContentValues values=new ContentValues();
+                values.put("direction",entry.direction);values.put("incoming",entry.incoming ? 1 : 0);
+                values.put("tokenid",entry.tokenid);values.put("tokenname",entry.tokenName);
+                values.put("amount",entry.amount);values.put("deltas",entry.deltas);values.put("counterparty",entry.counterparty);
+                database.update(TX,values,"txpowid=?",new String[]{entry.txpowid});
+            }
+            database.setTransactionSuccessful();
+        } finally { database.endTransaction(); }
+        reconciledOwnership=own;
+    }
+
     /** Insert a row; returns true if it was NEW, false if this txpowid was already stored. Idempotent. */
-    public boolean insert(HistoryEntry e) {
+    public boolean insert(HistoryEntry e) { return put(e,false); }
+    public boolean insertFromNode(HistoryEntry e) { return put(e,true); }
+    private synchronized boolean put(HistoryEntry e, boolean refresh) {
         ContentValues v = new ContentValues();
         v.put("txpowid", e.txpowid);
         v.put("block", e.block);
@@ -58,6 +81,11 @@ public class HistoryDb extends SQLiteOpenHelper {
         v.put("outputs", e.outputs);
         v.put("synced_at", e.syncedAt);
         long rid = getWritableDatabase().insertWithOnConflict(TX, null, v, SQLiteDatabase.CONFLICT_IGNORE);
+        if (rid != -1) reconciledOwnership=null;
+        else if (refresh && e.hasCoinData()) {
+            getWritableDatabase().update(TX,v,"txpowid=?",new String[]{e.txpowid});
+            reconciledOwnership=null;
+        }
         return rid != -1;
     }
 
@@ -87,6 +115,7 @@ public class HistoryDb extends SQLiteOpenHelper {
                 e.tokenid = c.getString(5); e.tokenName = Util.tokenName(c.getString(6), e.tokenid); e.amount = c.getString(7);
                 e.deltas = c.getString(8); e.counterparty = c.getString(9);
                 e.inputs = c.getString(10); e.outputs = c.getString(11); e.syncedAt = c.getLong(12);
+                e.reconcile(reconciledOwnership);
                 out.add(e);
             }
         } finally { c.close(); }
