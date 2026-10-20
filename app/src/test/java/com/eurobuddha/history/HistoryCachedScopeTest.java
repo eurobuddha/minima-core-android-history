@@ -32,7 +32,8 @@ public class HistoryCachedScopeTest {
  @Test public void freshKnownRowRefreshesWithoutCountingItAsANewTransaction()throws Exception{
   android.content.Context app=RuntimeEnvironment.getApplication();app.deleteDatabase("minima_history.db");HistoryDb db=new HistoryDb(app);
   HistoryEntry e=legacy();db.insert(e);e.reconcile(own());e.syncedAt=300;
-  assertFalse(db.insertFromNode(e));assertEquals(1,db.count());db.reconcile(own());assertEquals("1000",db.all().get(0).amount);assertEquals(300,db.all().get(0).syncedAt);
+  assertFalse(db.insertFromNode(e));assertEquals(1,db.count());db.reconcile(own());assertEquals("1000",db.all().get(0).amount);
+  assertEquals(200,db.all().get(0).syncedAt); // refresh keeps the first-capture time
   HistoryEntry malformed=legacy();malformed.inputs="[]";malformed.outputs="[]";
   assertFalse(db.insertFromNode(malformed));assertEquals("1000",db.all().get(0).amount);db.close();
  }

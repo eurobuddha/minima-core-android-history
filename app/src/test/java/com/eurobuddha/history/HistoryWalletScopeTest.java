@@ -42,5 +42,11 @@ public class HistoryWalletScopeTest {
   tx.getJSONObject("body").getJSONObject("txn").getJSONArray("outputs").getJSONObject(0).put("amount","bad");
   HistoryEntry e=HistoryEntry.from(tx,detail(),own());assertFalse(e.isSplit());assertFalse(e.reconcile(own()));
  }
+ @Test public void settledEntryReportsNoChangeAndOwnershipComparesByValue()throws Exception{
+  HistoryEntry e=HistoryEntry.from(tx(new JSONArray().put(coin("core","1060")),new JSONArray().put(coin("tracked-wallet","1000")).put(coin("change","60"))),detail(),own());
+  assertEquals("sent",e.direction);assertFalse(e.reconcile(own()));assertEquals("tracked-wallet",e.counterparty); // settled: nothing to write
+  assertEquals(own(),own());assertEquals(own().hashCode(),own().hashCode());
+  Ownership other=own();other.keys.add("0xkey");assertNotEquals(own(),other);
+ }
 
 }

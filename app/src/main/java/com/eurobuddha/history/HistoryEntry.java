@@ -128,13 +128,15 @@ public class HistoryEntry {
                 if (n != null && !n.isEmpty()) return n;
             }
         }
-        return Util.shorten(tid);
+        return tid;   // full id, never shortened (family rule)
     }
 
     private static String coins(JSONArray arr, Ownership own) {
         JSONArray out = new JSONArray();
         if (arr != null) for (int i = 0; i < arr.length(); i++) {
             JSONObject c = arr.optJSONObject(i);
+            // Deliberate: one unreadable coin voids the whole array so hasCoinData() fails and the
+            // node's `difference` stays authoritative — never account a partial coin set.
             if (c == null) return "[]";
             try {
                 JSONObject o = new JSONObject();
@@ -177,7 +179,8 @@ public class HistoryEntry {
     private boolean verifiedSelfTransfer;
 
     /** Reuse minimaWallet HistoryTx: outputs at this wallet minus inputs at this wallet.
-     * Tracking another wallet's script is not ownership of its spending keys. */
+     * Tracking another wallet's script is not ownership of its spending keys.
+     * Returns true only when a stored field actually CHANGED, so callers can skip the write. */
     public boolean reconcile(Ownership own) {
         verifiedSelfTransfer = false;
         if (own == null || !own.isLoaded() || !hasCoinData()) return false;
@@ -209,13 +212,17 @@ public class HistoryEntry {
             }
             JSONObject delta=new JSONObject();
             for (java.util.Map.Entry<String,BigDecimal> item:net.entrySet()) delta.put(item.getKey(),item.getValue().stripTrailingZeros().toPlainString());
-            String name=Util.isMinima(primary) ? "Minima" : names.getOrDefault(primary,primary.equals(tokenid) ? tokenName : Util.shorten(primary));
-            tokenid=primary;tokenName=name;amount=largest.abs().stripTrailingZeros().toPlainString();
-            direction=largest.signum()>0 ? "received" : largest.signum()<0 ? "sent" : "self";
-            incoming=largest.signum()>0;deltas=delta.toString();
-            counterparty=(incoming ? foreignIn : foreignOut).getOrDefault(primary,"");
+            String name=Util.isMinima(primary) ? "Minima" : names.getOrDefault(primary,primary.equals(tokenid) ? tokenName : primary);
+            String amountStr=largest.abs().stripTrailingZeros().toPlainString();
+            String dir=largest.signum()>0 ? "received" : largest.signum()<0 ? "sent" : "self";
+            String cp=(largest.signum()>0 ? foreignIn : foreignOut).getOrDefault(primary,"");
+            boolean changed=!primary.equals(tokenid) || !amountStr.equals(amount) || !dir.equals(direction)
+                    || !delta.toString().equals(deltas) || !cp.equals(counterparty) || !name.equals(tokenName)
+                    || (largest.signum()>0)!=incoming;
+            tokenid=primary;tokenName=name;amount=amountStr;direction=dir;
+            incoming=largest.signum()>0;deltas=delta.toString();counterparty=cp;
             verifiedSelfTransfer=allOwned && "self".equals(direction);
-            return true;
+            return changed;
         } catch (Exception malformed) { return false; }
     }
 
@@ -260,7 +267,7 @@ public class HistoryEntry {
             String domTid = "0x00"; BigDecimal domSum = BigDecimal.ZERO;
             for (java.util.Map.Entry<String, BigDecimal> en : sums.entrySet())
                 if (en.getValue().compareTo(domSum) > 0) { domSum = en.getValue(); domTid = en.getKey(); }
-            String name = Util.isMinima(domTid) ? "Minima" : domTid.equals(tokenid) ? tokenName : Util.shorten(domTid);
+            String name = Util.isMinima(domTid) ? "Minima" : domTid.equals(tokenid) ? tokenName : domTid;
             return Util.tidyAmount(domSum.stripTrailingZeros().toPlainString()) + "  " + name;
         } catch (Exception e) { return Util.tidyAmount(amount) + "  " + tokenName; }
     }

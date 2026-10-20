@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         db = new HistoryDb(this);
         own = Ownership.fromMeta(db);   // last-good labels, before the node ever replies
         hideForeign = "true".equals(db.getMeta("hide_foreign", "false"));
+        lastSyncOk = db.getMeta("last_sync_error", "").isEmpty();   // a failed sync stays visible across launches
         sync = new HistorySync(this, db, syncListener);
         adapter = new TxAdapter();
         recycler.setLayoutManager(new LinearLayoutManager(this));
@@ -255,16 +257,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateStatus() { io.execute(() -> { final int t = db.count(); ui.post(() -> updateStatus(t)); }); }
 
-    private void updateStatus(int total) {
-        if (total == 0 && !lastSyncOk) {
-            status.setText("Couldn't read history — the node may be busy or a page too large. Tap ⟳ to retry.");
-            return;
+    private void updateStatus(int total) { status.setText(statusLine(total, lastSyncOk, chainBlock, db.getMeta("last_sync_ts", ""))); }
+
+    /** Pure (unit-tested): a failed sync is always visible, however many rows are already stored. */
+    static String statusLine(int total, boolean syncOk, int chainBlock, String lastSyncTs) {
+        if (!syncOk) {
+            return total == 0 ? "Couldn't read history — the node may be busy or a page too large. Tap ⟳ to retry."
+                    : total + (total == 1 ? " transaction" : " transactions") + " · sync incomplete — tap ⟳ to retry";
         }
         String s = total + (total == 1 ? " transaction" : " transactions");
         if (chainBlock > 0) s += " · synced to block " + chainBlock;
-        String last = db.getMeta("last_sync_ts", "");
-        if (!last.isEmpty()) { try { s += " · " + relative(Long.parseLong(last)); } catch (Exception ignored) {} }
-        status.setText(s);
+        if (!lastSyncTs.isEmpty()) { try { s += " · " + relative(Long.parseLong(lastSyncTs)); } catch (Exception ignored) {} }
+        return s;
     }
 
     // ---- detail dialog ----
@@ -446,10 +450,10 @@ public class MainActivity extends AppCompatActivity {
             h.glyph.setText(g); h.glyph.setTextColor(color);
             h.line1.setText(reshuffle ? e.grossDisplay() : (sign + Util.tidyAmount(e.amount) + "  " + e.tokenName));
             h.line1.setTextColor(color);
-            // Counterparty ownership tag (full address is one tap away in the detail view).
+            // Counterparty: full address, never shortened (family rule) — line2 wraps as needed.
             Ownership.Kind ck = own.classify(e.counterparty);
             String tag = ck == Ownership.Kind.UNKNOWN ? "" : Ownership.label(ck) + "  ·  ";
-            String cp = e.counterparty.isEmpty() ? "" : Util.shorten(e.counterparty) + "  ·  " + tag;
+            String cp = e.counterparty.isEmpty() ? "" : e.counterparty + "  ·  " + tag;
             h.line2.setText((reshuffle ? e.reshuffleLabel() + "  ·  " : cp) + relative(e.timemilli));
             h.right.setText("#" + e.block);
             h.itemView.setOnClickListener(v -> showDetail(e));
@@ -462,6 +466,7 @@ public class MainActivity extends AppCompatActivity {
 
     public NodeApi node() { return node; }
     public Handler ui() { return ui; }
+    public Executor io() { return io; }
     public int chainBlock() { return chainBlock; }
     public Ownership ownership() { return own; }
 

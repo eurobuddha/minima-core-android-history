@@ -1,15 +1,19 @@
 {
   "0": "MainActivity",
-  "1": "LinearLayout",
+  "1": "utxoWallet — Native Android clone: figma-style mapping & build blueprint",
   "2": "HistoryDb",
   "3": "HistoryEntry",
   "4": "NodeApi",
   "5": "TokenMeta",
-  "6": "Handler",
-  "7": "Override",
+  "6": "Minima History (native Android)",
   "8": "gradlew",
   "9": "HistoryDesign",
   "10": "app/build.gradle",
   "11": "build.gradle",
-  "12": "settings.gradle"
+  "12": "settings.gradle",
+  "13": "User instructions — AUTHORITATIVE. These override default behavior and must be followed exactly.",
+  "15": "install.sh",
+  "16": "pre-commit",
+  "17": "Ownership",
+  "18": ".showDetail"
 }

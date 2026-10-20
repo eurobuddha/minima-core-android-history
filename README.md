@@ -12,12 +12,13 @@ local node over the broadcast-Intent IPC (`minimaapi`). No internet permission.
 
 ## How it works
 
-- **Sync** = `history relevant:true max:25 offset:N`, paged newest-first into a SQLite DB keyed by
+- **Sync** = `history relevant:true max:8 offset:N`, paged newest-first into a SQLite DB keyed by
   `txpowid` (idempotent). It stops at the first already-stored txpow (caught up) or a short page (end of
   what the node retains); first run pages gently to the end (one-time backfill).
 - **IPC-safe by design:** `history` is the heavy command that can overwhelm an un-hardened node, so sync
-  is bounded (`max:25` ≈190 KB/page), incremental, debounced on `NEWBLOCK`, with a delay between pages —
-  never an unbounded loop.
+  is bounded (`max:8`, halving to `max:1` on an over-limit reply, then 3 retries of the same offset before
+  reporting the sync incomplete), incremental, debounced on `NEWBLOCK`, with a delay between pages —
+  never an unbounded loop. An interrupted backfill resumes after its last good page.
 - **Direction + amount** are calculated from inputs and outputs at the Core wallet’s own addresses.
   Tracked scripts belonging to other wallets do not turn a send into a split. Cached native records
   are corrected before listing, searching or exporting; old token records need a fresh scaled snapshot.

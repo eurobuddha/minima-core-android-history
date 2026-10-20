@@ -41,15 +41,17 @@ public class HistoryDb extends SQLiteOpenHelper {
     // Never drop the table (permanence). Future versions add columns via ALTER here.
     @Override public void onUpgrade(SQLiteDatabase db, int o, int n) { onCreate(db); }
 
-    private Ownership reconciledOwnership;
+    // Written under the monitor, read by the unsynchronised list() path.
+    private volatile Ownership reconciledOwnership;
 
-    /** Correct existing rows before search/export; retain IDs, timestamps and coin evidence. */
+    /** Correct existing rows before search/export; retain IDs, timestamps and coin evidence.
+     *  Only rows whose stored fields actually change are written. */
     public synchronized void reconcile(Ownership own) {
-        if (own == null || !own.isLoaded() || reconciledOwnership == own) return;
+        if (own == null || !own.isLoaded() || own.equals(reconciledOwnership)) return;
         SQLiteDatabase database=getWritableDatabase();
         database.beginTransaction();
         try {
-            for (HistoryEntry entry:all()) {
+            for (HistoryEntry entry:list(Integer.MAX_VALUE, 0, null, null)) {   // raw rows: reconciled once, below
                 if (!entry.reconcile(own)) continue;
                 ContentValues values=new ContentValues();
                 values.put("direction",entry.direction);values.put("incoming",entry.incoming ? 1 : 0);
@@ -83,6 +85,7 @@ public class HistoryDb extends SQLiteOpenHelper {
         long rid = getWritableDatabase().insertWithOnConflict(TX, null, v, SQLiteDatabase.CONFLICT_IGNORE);
         if (rid != -1) reconciledOwnership=null;
         else if (refresh && e.hasCoinData()) {
+            v.remove("synced_at");   // refresh keeps the FIRST-capture time
             getWritableDatabase().update(TX,v,"txpowid=?",new String[]{e.txpowid});
             reconciledOwnership=null;
         }
@@ -95,7 +98,10 @@ public class HistoryDb extends SQLiteOpenHelper {
     }
 
     /** Newest-first page, optionally free-text filtered across address / id / token / amount / direction. */
-    public List<HistoryEntry> list(int limit, int offset, String search) {
+    public List<HistoryEntry> list(int limit, int offset, String search) { return list(limit, offset, search, reconciledOwnership); }
+
+    /** {@code own == null} skips the per-row reconcile (reconcile() does its own pass). */
+    private List<HistoryEntry> list(int limit, int offset, String search, Ownership own) {
         List<HistoryEntry> out = new ArrayList<>();
         String where = "";
         String[] args = null;
@@ -115,7 +121,7 @@ public class HistoryDb extends SQLiteOpenHelper {
                 e.tokenid = c.getString(5); e.tokenName = Util.tokenName(c.getString(6), e.tokenid); e.amount = c.getString(7);
                 e.deltas = c.getString(8); e.counterparty = c.getString(9);
                 e.inputs = c.getString(10); e.outputs = c.getString(11); e.syncedAt = c.getLong(12);
-                e.reconcile(reconciledOwnership);
+                e.reconcile(own);
                 out.add(e);
             }
         } finally { c.close(); }

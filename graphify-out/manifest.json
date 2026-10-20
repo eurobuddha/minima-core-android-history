@@ -1,7 +1,7 @@
 {
   "app/build.gradle": {
-    "mtime": 1785954606.9387388,
-    "ast_hash": "a727641ff205dd70ac8923bb007054c8",
+    "mtime": 1788463926.8267817,
+    "ast_hash": "98adbaae12dc1666afe4e06d08770c6b",
     "semantic_hash": ""
   },
   "app/src/main/java/com/eurobuddha/history/HistoryDb.java": {
@@ -15,18 +15,18 @@
     "semantic_hash": "06a43ed155902228d5de036ca59bdef1"
   },
   "app/src/main/java/com/eurobuddha/history/HistoryEntry.java": {
-    "mtime": 1783526747.3303726,
-    "ast_hash": "f2b79018b455185414cea2547d7b9fb6",
-    "semantic_hash": "f2b79018b455185414cea2547d7b9fb6"
+    "mtime": 1787523105.4339614,
+    "ast_hash": "9861e1f774ea68b6e107bae803f336ad",
+    "semantic_hash": ""
   },
   "app/src/main/java/com/eurobuddha/history/HistorySync.java": {
-    "mtime": 1783341906.0696385,
-    "ast_hash": "3d05221d85c9e64686e245d54422d46d",
-    "semantic_hash": "3d05221d85c9e64686e245d54422d46d"
+    "mtime": 1787523118.1996546,
+    "ast_hash": "5671aa9754ada70917f9d47ac4dec086",
+    "semantic_hash": ""
   },
   "app/src/main/java/com/eurobuddha/history/MainActivity.java": {
-    "mtime": 1785954576.1358864,
-    "ast_hash": "ebfb58dc90c17c672a39284f4dd79e23",
+    "mtime": 1787523067.8615587,
+    "ast_hash": "3ffec7a906bdb6aa7586d25ef62741d6",
     "semantic_hash": ""
   },
   "app/src/main/java/com/eurobuddha/history/NodeApi.java": {
@@ -60,8 +60,8 @@
     "semantic_hash": "82532489c8cfa2650cd5b34897216eaa"
   },
   "CLAUDE.md": {
-    "mtime": 1784124679.0532813,
-    "ast_hash": "4439d09bc81851d89f9ffcecc4136dcf",
+    "mtime": 1786883580.9499264,
+    "ast_hash": "46e9035553a7ba076e59754595bc542a",
     "semantic_hash": ""
   },
   "DESIGN_MAP.md": {
@@ -97,6 +97,21 @@
   "app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png": {
     "mtime": 1782563454.69747,
     "ast_hash": "c3340e689d942750f916b009eb91187f",
+    "semantic_hash": ""
+  },
+  ".githooks/install.sh": {
+    "mtime": 1786883580.9276178,
+    "ast_hash": "f31b37c6d1b5d340a5623f1715457ea0",
+    "semantic_hash": ""
+  },
+  ".githooks/pre-commit": {
+    "mtime": 1786883580.924757,
+    "ast_hash": "03526be838d5dd774506cc1f8b47f38c",
+    "semantic_hash": ""
+  },
+  "app/src/main/java/com/eurobuddha/history/Ownership.java": {
+    "mtime": 1787522919.5100703,
+    "ast_hash": "a9e6b80b00b261bf25be9c5faee73eb6",
     "semantic_hash": ""
   }
 }

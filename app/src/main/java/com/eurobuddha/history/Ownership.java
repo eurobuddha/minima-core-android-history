@@ -32,6 +32,14 @@ public class Ownership {
 
     public boolean isLoaded() { return !owned.isEmpty(); }
 
+    /** Value equality: a fresh parse of unchanged node sets must not re-trigger a DB reconcile pass. */
+    @Override public boolean equals(Object o) {
+        if (!(o instanceof Ownership)) return false;
+        Ownership x = (Ownership) o;
+        return owned.equals(x.owned) && contracts.equals(x.contracts) && keys.equals(x.keys);
+    }
+    @Override public int hashCode() { return java.util.Objects.hash(owned, contracts, keys); }
+
     public Kind classify(String addr) {
         if (!isLoaded()) return Kind.UNKNOWN;
         if (addr == null || addr.isEmpty()) return Kind.UNKNOWN;
