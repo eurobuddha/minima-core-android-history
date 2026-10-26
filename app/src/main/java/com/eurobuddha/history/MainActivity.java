@@ -1,5 +1,6 @@
 package com.eurobuddha.history;
 
+import com.eurobuddha.minimaapi.MinimaAPI;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -61,7 +62,6 @@ import java.util.concurrent.Executors;
  */
 public class MainActivity extends AppCompatActivity {
 
-    public static final String NODE_PKG = "com.eurobuddha.minimacore";
     private static final int MAX_ROWS = 3000;
 
     private NodeApi node;
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         notifyReceiver = new BroadcastReceiver() {
             @Override public void onReceive(Context c, Intent i) {
-                String data = i.getStringExtra(MinimaAPIMessages.MINIMA_API_NOTIFY_DATA);
+                String data = MinimaAPI.notifyData(i);
                 try {
                     String event = new JSONObject(data).optString("event", "");
                     if ("NEWBLOCK".equals(event) || "NEWBALANCE".equals(event)) { fetchBlock(); requestSync(); }
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         ContextCompat.registerReceiver(this, notifyReceiver,
-                new IntentFilter(MinimaAPIMessages.MINIMA_API_NOTIFY), ContextCompat.RECEIVER_EXPORTED);
+                MinimaAPI.notifyFilter(), ContextCompat.RECEIVER_EXPORTED);
 
         reloadList();   // show whatever is already stored, instantly + offline
     }
@@ -471,9 +471,7 @@ public class MainActivity extends AppCompatActivity {
     public Ownership ownership() { return own; }
 
     private void openMinimaCore() {
-        Intent launch = getPackageManager().getLaunchIntentForPackage(NODE_PKG);
-        if (launch == null) launch = getPackageManager().getLaunchIntentForPackage("com.eurobuddha.minimablock");
-        if (launch == null) launch = getPackageManager().getLaunchIntentForPackage("com.eurobuddha.pandamonium");
+        Intent launch = MinimaAPI.launchNode(this);
         if (launch != null) startActivity(launch);
         else Toast.makeText(this, "Minima Core isn't installed.", Toast.LENGTH_LONG).show();
     }
