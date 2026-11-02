@@ -273,14 +273,24 @@ public class MainActivity extends AppCompatActivity {
 
     // ---- detail dialog ----
 
+    private void showChainStatus(LinearLayout parent,String id) {
+        TextView evidence=new TextView(this);evidence.setText("Checking chain inclusion…");evidence.setTextSize(13f);parent.addView(evidence);
+        if(id==null||!id.matches("(?i)0x[0-9a-f]{64}")){evidence.setText("Unverified");return;}
+        node.cmd("txpow onchain:"+id,new NodeApi.Cb(){
+            public void onResult(JSONObject r){if(isFinishing() || isDestroyed())return;evidence.setText(HistoryChainStatus.describe(r));}
+            public void onError(String m){if(isFinishing() || isDestroyed())return;evidence.setText("Unverified — node check unavailable");}
+        });
+    }
+
     private void showDetail(HistoryEntry e) {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(20), dp(12), dp(20), dp(12));
 
-        kv(box, "Direction", e.direction);
+        kv(box, "Direction", HistoryChainStatus.direction(e.direction));
         kv(box, "Amount", (e.incoming ? "+" : e.direction.equals("sent") ? "−" : "") + Util.tidyAmount(e.amount) + " " + e.tokenName);
-        kv(box, "Block", String.valueOf(e.block));
+        kv(box, "Created at height (not confirmation)", String.valueOf(e.block));
+        showChainStatus(box,e.txpowid);
         kv(box, "Time", new SimpleDateFormat("dd MMM yyyy  HH:mm:ss", Locale.ENGLISH).format(new Date(e.timemilli)));
         copyRow(box, "Txpow id", e.txpowid);
         if (!Util.isMinima(e.tokenid)) copyRow(box, "Tokenid", e.tokenid);
@@ -455,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
             String tag = ck == Ownership.Kind.UNKNOWN ? "" : Ownership.label(ck) + "  ·  ";
             String cp = e.counterparty.isEmpty() ? "" : e.counterparty + "  ·  " + tag;
             h.line2.setText((reshuffle ? e.reshuffleLabel() + "  ·  " : cp) + relative(e.timemilli));
-            h.right.setText("#" + e.block);
+            h.right.setText("Unverified");
             h.itemView.setOnClickListener(v -> showDetail(e));
         }
 
@@ -556,16 +566,16 @@ public class MainActivity extends AppCompatActivity {
                 db.reconcile(own);
                 List<HistoryEntry> all = db.all();
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-                StringBuilder sb = new StringBuilder("txpowid,block,datetime,direction,amount,token,counterparty,deltas\n");
+                StringBuilder sb = new StringBuilder("txpowid,created_height,datetime,direction,amount,token,counterparty,inclusion_status,deltas\n");
                 for (HistoryEntry e : all) {
                     String signed = ("received".equals(e.direction) ? "" : "sent".equals(e.direction) ? "-" : "") + e.amount;
                     sb.append(csv(e.txpowid)).append(',')
                       .append(e.block).append(',')
                       .append(csv(fmt.format(new Date(e.timemilli)))).append(',')
-                      .append(csv(e.direction)).append(',')
+                      .append(csv(HistoryChainStatus.direction(e.direction))).append(',')
                       .append(csv(signed)).append(',')
                       .append(csv(e.tokenName)).append(',')
-                      .append(csv(e.counterparty)).append(',')
+                      .append(csv(e.counterparty)).append(',').append("unverified,")
                       .append(csv(e.deltas)).append('\n');
                 }
                 try (OutputStream os = getContentResolver().openOutputStream(uri)) {
